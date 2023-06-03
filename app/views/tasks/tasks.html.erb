@@ -1,0 +1,59 @@
+<div class="container p-2 mx-2">
+  <h1>Tasks</h1>
+</div>
+
+<div class="container p-2 mx-2">
+  <form>
+    <ol class="list-group">
+      <% @tasks.each do |task| %>
+        <li class="list-group-item">
+          <div class="form-check">
+            <%= check_box_tag "task_ids[]", task.id, task.completed, class: "form-check-input task-checkbox", data: { task_id: task.id, completed: task.completed } %>
+              <%= link_to task_path(task) do %>
+                <%= label_tag "task_#{task.id}", task.title, class: "form-check-label" %>
+              <% end %>
+            <i><%= link_to task_path(task), data: { turbo_method: :delete, turbo_confirm: "Are you f--ing sure?" } do %>
+              <i class="fas fa-trash"></i>
+            <% end %></i>
+          </div>
+        </li>
+      <% end %>
+    </ol>
+  </form>
+</div>
+
+<div class="container p-2 mx-2">
+  <%= link_to tasks_new_path, class: "btn btn-primary text-white", style: "text-decoration: none;" do %>
+    Create new task
+  <% end %>
+</div>
+
+<script>
+  // Attach event listeners to task checkboxes
+  const taskCheckboxes = document.querySelectorAll(".task-checkbox");
+  taskCheckboxes.forEach(function (checkbox) {
+    checkbox.addEventListener("change", function () {
+      const taskId = this.dataset.taskId;
+      const completed = this.checked;
+
+      // Make an AJAX request to update the task's "Completed" column
+      fetch(`/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": "<%= form_authenticity_token %>"
+        },
+        body: JSON.stringify({ task: { completed: completed } })
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Handle the response or perform any necessary updates
+          console.log(data);
+        })
+        .catch(error => {
+          // Handle errors
+          console.error(error);
+        });
+    });
+  });
+</script>
